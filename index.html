@@ -205,6 +205,7 @@ var APP = new Vue({
                    info:this.inputValue
                 },
                 type:"post",
+                dataType:'jsonp',
                 success:(backdata)=>{
                     console.log(backdata);
                     this.message.push({
