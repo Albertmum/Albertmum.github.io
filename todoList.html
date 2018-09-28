@@ -1,0 +1,195 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./css/index.css">
+    <script type="text/javascript" src="./lib/vue.js"></script>
+</head>
+
+<body>
+    <section class="todoapp">
+        <header class="header">
+            <h1>Todo List</h1>
+            <input  v-model.trim='inputvalue' @keyup.enter='addTodo' autocomplete="off" placeholder="想干啥?" class="new-todo">
+        </header>
+        <section class="main">
+            <input type="checkbox" @change='selectAll' v-model='isCheckAll' class="toggle-all">
+            <ul class="todo-list">
+                <li class="todo " :class={completed:item.iscompleted,editing:item.isediting} v-for='(item,index) in filterArr'>
+                    <div class="view">
+                        <input @change='AllisChecked' type="checkbox" v-model='item.iscompleted' class="toggle">
+                        <label @dblclick='editing(index)' >{{item.content}}</label>
+                        <button @click='delCurrent(index)' class="destroy"></button>
+                    </div>
+                    <input v-focus @keyup.enter='saveChange(index)' @blur='saveChange(index)' v-model='item.content' type="text" class="edit">
+                </li>
+             <!--    <li class="todo completed">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+                <li class="todo editing">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li> -->
+            </ul>
+        </section>
+        <footer class="footer">
+            <span class="todo-count">
+                <strong>{{unfinshednum}}</strong> 项 剩余
+            </span>
+            <ul class="filters">
+                <li>
+                    <a href="#/all" @click="status('all')" :class="{selected:filder=='all'}">全部</a>
+                </li>
+                <li>
+                    <a href="#/active" @click="status('active')" :class="{selected:filder=='active'}">未完成</a>
+                </li>
+                <li>
+                    <a href="#/completed" @click="status('completed')" :class="{selected:filder=='completed'}">完成</a>
+                </li>
+            </ul>
+            <button @click='delAll' class="clear-completed">
+                清空列表
+            </button>
+        </footer>
+    </section>
+    <footer class="info">
+        <p>双击进入编辑状态</p>
+        <p>鸣谢:
+            <a href="http://evanyou.me">Evan You</a>
+        </p>
+        <p>参考于
+            <a href="http://todomvc.com">TodoMVC</a>
+        </p>
+    </footer>
+    <script>
+
+    Vue.directive('focus',{
+        inserted:function(el){
+            el.focus()
+        },
+        update:function(el){
+            el.focus()
+        }
+    })
+
+    var inputlist=JSON.parse(window.localStorage.getItem('TodoList'))||[];
+
+    window.onunload=function(){
+        window.localStorage.setItem('TodoList', JSON.stringify(inputlist));
+    }
+
+
+
+    var app = new Vue({
+        el: '.todoapp',
+        data: {
+            inputvalue: '',
+            inputlist,
+            filder:'all',
+            isCheckAll: false
+        },
+        methods: {
+            addTodo() {
+                if (this.inputvalue == '') {
+                    confirm('Do someing!');
+                    return;
+                } else {
+                    this.inputlist.push({
+                        content: this.inputvalue,
+                        iscompleted: false,
+                        isediting:false
+                    })
+                    this.inputvalue='';
+                }
+            },
+            delCurrent(index){
+                if(confirm('Are you sure?')){
+                    this.inputlist.splice(index,1);
+                }
+            },
+            delAll(){
+                if(confirm('Are you sure?')){
+                    this.inputlist=[]
+                }
+            },
+            editing(index){
+                this.inputlist.forEach(v=>v.isediting=false)
+                
+                this.inputlist[index].isediting=true;
+            },
+            saveChange(index){
+                this.inputlist[index].isediting=false;
+            },
+            status(value){
+                this.filder=value;
+            },
+            selectAll(){
+                this.inputlist.forEach(v=>v.iscompleted=this.isCheckAll)
+            },
+            AllisChecked(){
+                let num = 0;
+                this.inputlist.forEach(v=>{
+                    if(v.iscompleted){
+                        num++;
+                    }
+                })
+                if(this.inputlist.length==num){
+                    this.isCheckAll=true
+                }else{
+                    this.isCheckAll=false;
+                }
+            }
+        },
+        computed:{
+            unfinshednum(){
+                var num = 0;
+                this.inputlist.forEach((i, e,arr)=>{
+                    if(i.iscompleted==false){
+                        num++
+                    }
+                })
+                 return num;
+            },
+            filterArr(){
+                if(this.filder=='all'){
+                    return this.inputlist;
+                }else if(this.filder=='active'){
+                    let tempArr=[];
+                    this.inputlist.forEach(v=>{
+                        if(v.iscompleted==false){
+                            tempArr.push(v);
+                        }
+                        
+                    })
+                    return tempArr;
+                }else{
+                    let tempArr=[];
+                    this.inputlist.forEach(v=>{
+                        if(v.iscompleted==true){
+                            tempArr.push(v);
+                        }
+                        
+                    })
+                    return tempArr;
+                }
+            }
+        }
+    })
+    </script>
+</body>
+
+</html>
